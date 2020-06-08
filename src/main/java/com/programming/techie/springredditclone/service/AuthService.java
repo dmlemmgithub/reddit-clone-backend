@@ -11,7 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
+import com.programming.techie.springredditclone.dto.AuthenticationResponse;
+import com.programming.techie.springredditclone.dto.LoginRequest;
 import com.programming.techie.springredditclone.dto.RegisterRequest;
 import com.programming.techie.springredditclone.exception.SpringRedditException;
 import com.programming.techie.springredditclone.model.NotificationEmail;
@@ -19,6 +20,7 @@ import com.programming.techie.springredditclone.model.User;
 import com.programming.techie.springredditclone.model.VerificationToken;
 import com.programming.techie.springredditclone.repository.UserRepository;
 import com.programming.techie.springredditclone.repository.VerificationTokenRepository;
+import com.programming.techie.springredditclone.security.JwtProvider;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +32,6 @@ import java.util.UUID;
 import static com.programming.techie.springredditclone.util.Constants.ACTIVATION_EMAIL;
 import static java.time.Instant.now;
 
-
-
 @Service
 @AllArgsConstructor
 @Slf4j
@@ -39,6 +39,8 @@ public class AuthService {
 
 	private  UserRepository userRepository;
     private  PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtProvider jwtProvider;
     private final VerificationTokenRepository verificationTokenRepository;
     private final MailContentBuilder mailContentBuilder;
     private final MailService mailService;
@@ -53,7 +55,7 @@ public class AuthService {
         user.setEnabled(false);
 
         userRepository.save(user);
-        
+        log.info("User Registered Successfully, Sending Authentication Email");
         String token = generateVerificationToken(user);
         String message = mailContentBuilder.build("Thank you for signing up to Spring Reddit, please click on the below url to activate your account : "
         		+ ACTIVATION_EMAIL + "/" + token);
@@ -73,6 +75,14 @@ public class AuthService {
     private String encodePassword(String password) {
         return passwordEncoder.encode(password);
     }
+    
+    public AuthenticationResponse login(LoginRequest loginRequest) {
+    	Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
+    	loginRequest.getPassword()));
+    	SecurityContextHolder.getContext().setAuthentication(authenticate);
+    	String authenticationToken = jwtProvider.generateToken(authenticate);
+    	return new AuthenticationResponse(authenticationToken, loginRequest.getUsername());
+    	}
     
     public void verifyAccount(String token) {
     	Optional<VerificationToken> verificationTokenOptional = verificationTokenRepository.findByToken(token);

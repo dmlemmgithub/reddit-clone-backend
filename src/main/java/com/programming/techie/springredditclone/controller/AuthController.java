@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.http.HttpStatus.OK;
 
+import com.programming.techie.springredditclone.dto.AuthenticationResponse;
+import com.programming.techie.springredditclone.dto.LoginRequest;
+
 @RestController
 @RequestMapping("/api/auth")
 @AllArgsConstructor
@@ -27,10 +30,16 @@ public class AuthController {
                 OK);
     }
     
+    @PostMapping("/login")
+    public AuthenticationResponse login(@RequestBody LoginRequest loginRequest) {
+        return authService.login(loginRequest);
+    }
+    
     @GetMapping("accountVerification/{token}")
     public ResponseEntity<String> verifyAccount(@PathVariable String token) {
     authService.verifyAccount(token);
     return new ResponseEntity<>("Account Activated Successully", OK);
     }
+    
     
 }
