@@ -9,6 +9,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.programming.techie.springredditclone.security.JwtAuthenticationFilter;
+
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.config.BeanIds;
@@ -21,6 +25,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 public class SecurityConfig extends WebSecurityConfigurerAdapter{
 	
 	private final UserDetailsService userDetailsService;
+	 private final JwtAuthenticationFilter jwtAuthenticationFilter;
 	
 	@Bean(BeanIds.AUTHENTICATION_MANAGER)
     @Override
@@ -38,6 +43,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
                 .permitAll()
                 .anyRequest()
                 .authenticated();
+        
+        httpSecurity.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     }
 	
 	@Autowired

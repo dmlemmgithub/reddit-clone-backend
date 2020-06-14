@@ -65,4 +65,13 @@ public class JwtProvider {
                     "retrieving public key from keystore", e);
         }
     }
+	
+	 public String getUsernameFromJWT(String token) {
+	        Claims claims = parser()
+	                .setSigningKey(getPublickey())
+	                .parseClaimsJws(token)
+	                .getBody();
+
+	        return claims.getSubject();
+	    }
 }
